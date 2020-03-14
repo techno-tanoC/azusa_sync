@@ -55,12 +55,6 @@ impl<T> Progress<T> {
     }
 }
 
-impl<T: Seek> Progress<T> {
-    pub fn rewind(&self) -> io::Result<u64> {
-        self.lock().buf.seek(SeekFrom::Start(0))
-    }
-}
-
 impl<T: Read> Read for Progress<T> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.lock().buf.read(buf)
@@ -94,7 +88,7 @@ impl<T: Seek> Seek for Progress<T> {
 mod tests {
     use super::*;
 
-    use std::io::Cursor;
+    use std::io::{Cursor, SeekFrom};
 
     #[test]
     fn set_total_test() {
@@ -109,7 +103,7 @@ mod tests {
         let mut pg = Progress::new("pg", Cursor::new(vec![]));
         pg.write_all(&*data).unwrap();
         assert_eq!(pg.lock().buf.position(), 5);
-        pg.rewind().unwrap();
+        pg.seek(SeekFrom::Start(0)).unwrap();
         assert_eq!(pg.lock().buf.position(), 0);
     }
 
@@ -118,7 +112,7 @@ mod tests {
         let data = b"hello";
         let mut pg = Progress::new("pg", Cursor::new(vec![]));
         pg.write_all(&*data).unwrap();
-        pg.rewind().unwrap();
+        pg.seek(SeekFrom::Start(0)).unwrap();
 
         let mut buf = vec![];
         pg.read_to_end(&mut buf).unwrap();
