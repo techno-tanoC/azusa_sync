@@ -40,7 +40,7 @@ impl Client {
             std::io::copy(res, pg)?;
             Ok(())
         } else {
-            Err(Error::NonSuccessStatusError(format!("{:?}", res)))?
+            Err(Error::NonSuccessStatusError(format!("{:?}", res)))
         }
     }
 
